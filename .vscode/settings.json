@@ -10,5 +10,24 @@
     "IDF_TARGET": "esp32"
   },
   "idf.flashType": "UART",
-  "idf.portWin": "COM7"
+  "idf.portWin": "COM7",
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
+  "files.associations": {
+    "esp_err.h": "c",
+    "i2c.h": "c",
+    "esp_mac.h": "c",
+    "esp_clk.h": "c",
+    "esp_log.h": "c",
+    "esp_chip_info.h": "c",
+    "bmp180.h": "c",
+    "esp_idf_lib_helpers.h": "c",
+    "stdbool.h": "c",
+    "i2cdev.h": "c",
+    "inttypes.h": "c",
+    "ets_sys.h": "c",
+    "esp_idf_version.h": "c",
+    "math.h": "c",
+    "mpu6050.h": "c"
+  }
+
 }

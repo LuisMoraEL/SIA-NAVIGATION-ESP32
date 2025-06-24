@@ -3,20 +3,32 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 #include "esp_chip_info.h"
-#include "esp_flash.h"
 #include "esp_mac.h"
 #include "esp_log.h"
 #include "esp_private/esp_clk.h"
 
+#include "driver/i2c.h"
+
+// sensores
+#include "bmp180.h"
+#include "mpu6050.h"
+
 static const char *TAG = "MAIN_TAG";
 
+// Definiciones y constantes
+#define I2C_SPEED_FAST 400000
+
+// Declaración de métodos
 void show_esp_info(void);
+esp_err_t init_i2c(void);
 
 void app_main(void)
 {
     printf("\n ----------> SIA NAVIGATION ESP32 <---------- \n");
 
     show_esp_info();
+
+    ESP_ERROR_CHECK(init_i2c());
 
     while (1) {
         printf(". \n");
@@ -25,12 +37,29 @@ void app_main(void)
     
 }
 
+// Inicialización y configuración de I2C
+esp_err_t init_i2c() {
+    i2c_config_t i2c_config = {};
+
+    // Definición de la configuración i2c
+    i2c_config.mode = I2C_MODE_MASTER;
+    i2c_config.sda_io_num = 21;
+    i2c_config.scl_io_num = 22;
+    i2c_config.sda_pullup_en = true;
+    i2c_config.scl_pullup_en = true;
+    i2c_config.master.clk_speed = I2C_SPEED_FAST;
+    i2c_config.clk_flags = 0;
+
+    // implementación de la configuración
+    ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &i2c_config));
+    ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, ESP_INTR_FLAG_LEVEL1));
+
+    return ESP_OK;
+}
+
 void show_esp_info() {
     esp_chip_info_t chip_info;
     esp_chip_info(&chip_info);
-
-    uint32_t flash_size;
-    esp_flash_get_size(NULL, &flash_size);
 
     uint8_t mac[6];
     esp_read_mac(mac, ESP_MAC_WIFI_STA);
@@ -42,9 +71,6 @@ void show_esp_info() {
              (chip_info.features & CHIP_FEATURE_BT) ? "/BT" : "",
              (chip_info.features & CHIP_FEATURE_BLE) ? "/BLE" : "");
     ESP_LOGI(TAG, "Silicio revisión: %d", chip_info.revision);
-    ESP_LOGI(TAG, "Flash: %luMB %s", flash_size / (1024 * 1024),
-             (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "interna" : "externa");
-
     ESP_LOGI(TAG, "IDF Version: %s", esp_get_idf_version());
 
     ESP_LOGI(TAG, "Dirección MAC (WIFI STA): %02X:%02X:%02X:%02X:%02X:%02X",
